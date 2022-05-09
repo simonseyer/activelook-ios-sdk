@@ -139,6 +139,8 @@ internal class GlassesUpdater {
 
         versionChecker = VersionChecker()
 
+        // TODO: ASANA task "Check glasses FW version <= SDK version" – https://app.asana.com/0/1201639829815358/1202209982822311 – 220504
+
         sdk?.updateParameters.notify(.startingUpdate)
 
         // get battery level
