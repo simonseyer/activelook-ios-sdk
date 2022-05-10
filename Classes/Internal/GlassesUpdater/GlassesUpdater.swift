@@ -31,6 +31,7 @@ internal enum GlassesUpdateError: Error
     case networkUnavailable                     // 8
     case connectionLost                         // 10
     case abortingUpdate                         // 11
+    case invalidToken                           // 9
 }
 
 
