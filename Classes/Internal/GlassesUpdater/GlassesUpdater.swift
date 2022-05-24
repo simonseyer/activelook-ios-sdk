@@ -29,6 +29,7 @@ internal enum GlassesUpdateError: Error
     case downloaderJsonError                    // 6
     case firmwareUpdater(message: String = "")  // 7
     case networkUnavailable                     // 8
+    case invalidToken                           // 9
     case connectionLost                         // 10
     case abortingUpdate                         // 11
 }
@@ -53,6 +54,9 @@ internal class GlassesUpdater {
     private var versionChecker: VersionChecker?
     private var downloader: Downloader?
 
+//        // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+    private var cancelConnectionAt: Int = 10
 
     // MARK: - Life cycle
 
@@ -82,6 +86,21 @@ internal class GlassesUpdater {
         self.errorClosure = errorClosure
 
         versionChecker = VersionChecker()
+
+//       // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+        if sdk!.numberOfTriesBeforeConnecting > 0 {
+            sdk!.numberOfTriesBeforeConnecting -= 1
+            cancelConnectionAt = Int.random(in: 0..<4)
+            //        cancelConnectionAt = 7
+            print("\ncancelConnectionAt: \(cancelConnectionAt)\n")
+        } else {
+            cancelConnectionAt = 10
+        }
+        if cancelConnectionAt == 0 {
+            print("\ncanceling connection @ \(cancelConnectionAt)\n")
+            sdk?.cancelPeriphConnection()
+        }
 
         sdk?.updateParameters.update(.startingUpdate)
 
@@ -120,6 +139,13 @@ internal class GlassesUpdater {
 
     private func process(_ versCheckResult: VersionCheckResult)
     {
+//        //FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+            if cancelConnectionAt == 2 {
+              print("\ncanceling connection @ \(cancelConnectionAt)")
+              sdk?.cancelPeriphConnection()
+            }
+
         switch versCheckResult.software
         {
         case .firmwares :
@@ -141,6 +167,12 @@ internal class GlassesUpdater {
             failed(with: GlassesUpdateError.networkUnavailable)
             return
         }
+//        // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+            if cancelConnectionAt == 1 {
+              print("\ncanceling connection @ \(cancelConnectionAt)")
+              sdk?.cancelPeriphConnection()
+            }
 
         guard glasses!.areConnected() else {
             failed(with: GlassesUpdateError.glassesUpdater(message: "Glasses NOT connected"))
@@ -155,6 +187,13 @@ internal class GlassesUpdater {
 
     private func processFirmwareResponse(_ result: VersionCheckResult )
     {
+//        // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+            if cancelConnectionAt == 3 {
+              print("\ncanceling connection @ \(cancelConnectionAt)")
+              sdk?.cancelPeriphConnection()
+            }
+
         switch result.status
         {
         case .needsUpdate(let apiUrl) :
@@ -187,6 +226,13 @@ internal class GlassesUpdater {
         sdk?.updateParameters.update(.updatingFw)
 
         downloader = nil
+
+//        //FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+        if cancelConnectionAt == 4 {
+            print("\ncanceling connection @ \(cancelConnectionAt)")
+            sdk?.cancelPeriphConnection()
+        }
 
         sdk?.updateParameters.update(.updatingFw)
 
@@ -226,6 +272,14 @@ internal class GlassesUpdater {
     private func checkConfigurationRecency()
     {
         sdk?.updateParameters.update(.checkingConfigVersion)
+//        //FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+        if cancelConnectionAt == 5 {
+            print("\ncanceling connection @ \(cancelConnectionAt)")
+            sdk?.cancelPeriphConnection()
+        }
+
+        sdk?.updateParameters.update(.checkingConfigVersion)
 
         guard NetworkMonitor.shared.isConnected else {
             failed(with: GlassesUpdateError.networkUnavailable)
@@ -245,6 +299,13 @@ internal class GlassesUpdater {
 
     private func processConfigurationResponse(_ result: VersionCheckResult )
     {
+//        // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+        if cancelConnectionAt == 6 {
+            print("\ncanceling connection @ \(cancelConnectionAt)")
+            sdk?.cancelPeriphConnection()
+        }
+
         guard glasses!.areConnected() else {
             failed(with: GlassesUpdateError.glassesUpdater(message: "Glasses NOT connected"))
             return
@@ -282,6 +343,14 @@ internal class GlassesUpdater {
         sdk?.updateParameters.update(.updatingConfig)
 
         downloader = nil
+
+//        // FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!
+//#warning("FIXME: ADDED HERE FOR DEBUGGING -> TO REMOVE!!!")
+        if cancelConnectionAt == 7 {
+            print("\ncanceling connection @ \(cancelConnectionAt)")
+            sdk?.cancelPeriphConnection()
+        }
+
 
         sdk?.updateParameters.update(.updatingConfig)
 
