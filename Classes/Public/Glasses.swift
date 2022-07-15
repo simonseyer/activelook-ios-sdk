@@ -927,7 +927,7 @@ public class Glasses {
 
     /// Display a page
     public func pageDisplay(id: UInt8, texts: [String]) {
-        var withData: [UInt8] = []
+        var withData: [UInt8] = [id]
         texts.forEach { text in
             withData += text.asNullTerminatedUInt8Array
         }
